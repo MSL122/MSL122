@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Los Santos Police Department</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#061323;--panel:#091a2e;--panel2:#0d2744;--line:#315071;
+  --text:#f4f7fb;--muted:#aebdce;--accent:#2e75c7;
+}
+body{margin:0;background:linear-gradient(135deg,#04101e,#081b30 55%,#061222);color:var(--text);
+font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+.top{height:76px;background:rgba(4,13,25,.96);border-bottom:1px solid #263b53;display:flex;align-items:center;
+padding:0 28px;gap:18px;position:sticky;top:0;z-index:10}
+.badge{width:44px;height:44px;border-radius:10px;background:#102a45;display:grid;place-items:center;font-size:22px;
+border:1px solid #3d5d7b}
+.brand{font-size:20px;font-weight:700;letter-spacing:.2px;flex:1}
+.top-actions{display:flex;gap:9px;align-items:center}
+button{font:inherit}
+.iconbtn{background:transparent;color:#cbd7e4;border:1px solid transparent;border-radius:9px;padding:9px 11px;cursor:pointer}
+.iconbtn:hover{background:#122b45}
+.share{background:#2d75c6;color:white;border:0;border-radius:22px;padding:11px 19px;cursor:pointer;font-weight:700}
+.wrap{padding:30px 4vw 55px}
+.hero{background:linear-gradient(110deg,#0a2340,#0b1e35);border:1px solid var(--line);border-radius:8px 8px 0 0;
+padding:30px 20px;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,.18)}
+.hero h1{margin:0;font-size:clamp(30px,4vw,54px)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:14px;background:#08182a;border:1px solid var(--line);border-top:0}
+.search{flex:1;min-width:220px;background:#071425;color:white;border:1px solid #3a536d;border-radius:8px;padding:11px 14px;outline:none}
+.filter,.add{background:#102842;color:#fff;border:1px solid #3a5774;border-radius:8px;padding:10px 13px;cursor:pointer}
+.add{background:#286fbb;border-color:#3986d5}
+.tablebox{overflow:auto;border:1px solid var(--line);border-top:0}
+table{border-collapse:collapse;width:100%;min-width:1050px;background:rgba(5,18,33,.78)}
+th{background:#102b4a;font-size:15px;padding:13px 10px;border:1px solid #46627e;white-space:nowrap}
+td{height:39px;padding:7px 10px;text-align:center;border:1px solid #28435e;font-weight:600}
+td.name{text-align:left;padding-left:22px}
+.group td{height:31px;background:#143452;font-size:14px;border-color:#496680}
+.group .count{text-align:right;padding-right:22px;font-size:12px}
+.rank{font-size:25px;letter-spacing:2px;text-shadow:0 1px 2px #000}
+.rank.captain{letter-spacing:-3px;font-size:30px}
+.rank.lieutenant{font-size:28px}
+.rank.sergeant{font-size:27px;letter-spacing:-5px}
+.empty{color:#73869a}
+.footer{margin-top:18px;color:#8ea1b5;font-size:13px;text-align:center}
+.tabs{display:flex;gap:4px;overflow:auto;background:#061120;border:1px solid var(--line);border-top:0;padding:0 10px}
+.tab{padding:14px 20px;color:#d4dfeb;white-space:nowrap;cursor:pointer;border:0;background:transparent}
+.tab.active{color:#4ea4ff;border-bottom:3px solid #2f86df}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}.card{width:min(500px,100%);background:#0a1b2f;border:1px solid #45617d;border-radius:12px;padding:22px}
+.card h2{margin-top:0}.field{display:grid;gap:6px;margin:12px 0}.field input,.field select{
+background:#071425;color:#fff;border:1px solid #405b75;border-radius:7px;padding:10px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+@media(max-width:700px){.top{padding:0 12px}.brand{font-size:15px}.wrap{padding:18px 10px 40px}.hero{padding:23px 10px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="badge">★</div><div class="brand">Los Santos Police Department</div>
+  <div class="top-actions"><button class="iconbtn" title="History">◷</button><button class="iconbtn" title="Print" onclick="window.print()">▣</button>
+  <button class="share">🔒 Share</button></div>
+</header>
+
+<main class="wrap">
+<section class="hero"><h1>Los Santos Police Department</h1></section>
+
+<div class="toolbar">
+  <input id="search" class="search" placeholder="Search by BN, name, rank or section..." oninput="render()">
+  <select id="sectionFilter" class="filter" onchange="render()"><option value="">All sections</option></select>
+  <button class="add" onclick="openModal()">＋ Add officer</button>
+</div>
+
+<div class="tablebox">
+<table>
+<thead><tr>
+<th>BN</th><th>Names</th><th>Rank</th><th>Administrative rank</th><th>Section</th>
+<th>Points</th><th>V.P</th><th>Stripes</th><th>Service Since</th><th>Certificates</th>
+</tr></thead>
+<tbody id="roster"></tbody>
+</table>
+</div>
+
+<nav class="tabs">
+<button class="tab active">Los Santos Police Department</button>
+<button class="tab">Police Squads</button><button class="tab">Administration</button>
+<button class="tab">Supplies</button><button class="tab">LSFD Supplies</button><button class="tab">Duty Management</button>
+</nav>
+<div class="footer">LSPD Roster • Editable local version • Data is saved in this browser</div>
+</main>
+
+<div class="modal" id="modal">
+<div class="card">
+<h2>Add officer</h2>
+<div class="field"><label>BN</label><input id="mBN"></div>
+<div class="field"><label>Name</label><input id="mName"></div>
+<div class="field"><label>Rank</label><select id="mRank">
+<option>Captain</option><option>Lieutenant</option><option>Sergeant</option><option>Police Chief</option>
+</select></div>
+<div class="field"><label>Service Since</label><input id="mService" placeholder="e.g. 2026"></div>
+<div class="modal-actions"><button class="filter" onclick="closeModal()">Cancel</button><button class="add" onclick="addOfficer()">Add</button></div>
+</div></div>
+
+<script>
+const initial=[
+{bn:"",name:"Drak0ola",rank:"Command",service:"Minister of Interior"},
+{bn:"",name:"Abuswe71",rank:"Command",service:"Minister of Interior"},
+{bn:"101",name:"MT | Abdullah",rank:"Police Chief",service:"Police Chief"},
+{bn:"102",name:"MT | JASER",rank:"Captain",service:"Captain"},
+{bn:"103",name:"DRAKOLA",rank:"Captain",service:"Captain"},
+{bn:"104",name:"Carizma",rank:"Captain",service:"Captain"},
+{bn:"105",name:"MT | Azzz",rank:"Captain",service:"Captain"},
+{bn:"106",name:"OSAMAH",rank:"Captain",service:"Captain"},
+{bn:"107",name:"Sopfix",rank:"Captain",service:"Captain"},
+{bn:"108",name:"NQ",rank:"Captain",service:"Captain"},
+{bn:"201",name:"JUST",rank:"Lieutenant",service:"Lieutenant"},
+{bn:"202",name:"MT | Hatem",rank:"Lieutenant",service:"Lieutenant"},
+{bn:"203",name:"Tony",rank:"Lieutenant",service:"Lieutenant"},
+{bn:"204",name:"3LOOSH",rank:"Lieutenant",service:"Lieutenant"},
+{bn:"301",name:"Saud",rank:"Sergeant",service:"Sergeant"},
+{bn:"302",name:"Q7z",rank:"Sergeant",service:"Sergeant"},
+{bn:"303",name:"iMohammed",rank:"Sergeant",service:"Sergeant"},
+{bn:"304",name:"Khalid",rank:"Sergeant",service:"Sergeant"},
+{bn:"305",name:"Faisal",rank:"Sergeant",service:"Sergeant"},
+{bn:"306",name:"MT | Devil",rank:"Sergeant",service:"Sergeant"}
+];
+let officers=JSON.parse(localStorage.getItem("lspd_officers")||"null")||initial;
+function icon(rank){
+ if(rank==="Police Chief"||rank==="Command")return '<span class="rank">★★★★★</span>';
+ if(rank==="Captain")return '<span class="rank captain">▮▮</span>';
+ if(rank==="Lieutenant")return '<span class="rank lieutenant">▮</span>';
+ if(rank==="Sergeant")return '<span class="rank sergeant">≋</span>';
+ return '<span class="empty">—</span>';
+}
+function rankGroup(rank){return rank==="Command"?"Command":rank}
+function render(){
+ const q=document.getElementById("search").value.toLowerCase(), f=document.getElementById("sectionFilter").value;
+ const filtered=officers.filter(o=>(!q||Object.values(o).join(" ").toLowerCase().includes(q))&&(!f||o.rank===f));
+ const groups={};
+ filtered.forEach(o=>(groups[o.rank]??=[]).push(o));
+ const order=["Command","Police Chief","Captain","Lieutenant","Sergeant"];
+ let out="";
+ order.forEach(r=>{
+  if(!groups[r]?.length)return;
+  const label=r==="Police Chief"?"Police Chief":r;
+  if(r!=="Command"&&r!=="Police Chief") out+=`<tr class="group"><td colspan="9">${label}</td><td class="count">in duty : ${groups[r].length}</td></tr>`;
+  groups[r].forEach(o=>out+=`<tr><td>${o.bn||""}</td><td class="name">${o.name}</td><td>${icon(o.rank)}</td><td></td><td></td><td></td><td></td><td></td><td>${o.service||""}</td><td>${o.rank==="Police Chief"?"Police Chief":o.rank==="Command"?"Minister of Interior":""}</td></tr>`);
+ });
+ document.getElementById("roster").innerHTML=out||'<tr><td colspan="10" class="empty">No officers found.</td></tr>';
+}
+function initFilter(){const s=document.getElementById("sectionFilter");[...new Set(officers.map(o=>o.rank))].forEach(r=>{let x=document.createElement("option");x.value=r;x.textContent=r;s.appendChild(x)})}
+function openModal(){document.getElementById("modal").classList.add("show")}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function addOfficer(){
+ const o={bn:mBN.value.trim(),name:mName.value.trim(),rank:mRank.value,service:mService.value.trim()};
+ if(!o.name)return alert("Enter the officer name.");
+ officers.push(o);localStorage.setItem("lspd_officers",JSON.stringify(officers));closeModal();location.reload();
+}
+initFilter();render();
+</script>
+</body>
+</html>
