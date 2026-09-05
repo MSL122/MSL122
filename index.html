@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>إدارة CIA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f3f6fa;color:#172033}
+.sidebar{position:fixed;right:0;top:0;width:245px;height:100vh;background:#111827;color:#fff;padding:22px 15px;z-index:5}
+.logo{font-size:21px;font-weight:bold;padding:10px 12px 25px;border-bottom:1px solid #2b3444;margin-bottom:15px}.logo span{display:block;font-size:12px;color:#9ca3af;margin-top:7px}
+.nav button{display:block;width:100%;border:0;background:transparent;color:#cbd5e1;text-align:right;padding:13px 14px;border-radius:10px;margin:3px 0;font-size:14px;cursor:pointer}.nav button:hover,.nav button.active{background:#1f2937;color:#fff}
+.main{margin-right:245px;padding:30px;min-height:100vh}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.title h1{margin:0;font-size:27px}.title p{margin:7px 0;color:#6b7280;font-size:13px}.profile{background:#fff;padding:10px 15px;border:1px solid #e5e7eb;border-radius:12px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:15px;padding:19px}.label{font-size:13px;color:#6b7280}.number{font-size:29px;font-weight:bold;margin-top:11px}
+.panel{background:#fff;border:1px solid #e5e7eb;border-radius:15px;padding:20px;margin-bottom:20px}.panel h2{font-size:17px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:right;padding:13px 7px;border-bottom:1px solid #edf0f3}th{color:#6b7280;font-weight:normal}.badge{padding:5px 9px;border-radius:20px;background:#eef2f7;font-size:11px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:14px;border:1px solid #e1e5ea;background:#f8fafc;border-radius:10px;cursor:pointer;font-family:inherit}.quick button:hover{background:#eef2f7}
+.page{display:none}.page.active{display:block}.search{width:100%;padding:12px;border:1px solid #dce1e7;border-radius:9px;margin-bottom:15px;font-family:inherit}
+.add{background:#111827;color:#fff;border:0;border-radius:9px;padding:11px 16px;cursor:pointer;font-family:inherit}.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;align-items:center;justify-content:center}.modal.show{display:flex}.box{background:#fff;width:min(480px,92%);border-radius:16px;padding:22px}.box h2{margin-top:0}.box input,.box select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #dce1e7;border-radius:8px;font-family:inherit}.actions{display:flex;gap:8px;justify-content:flex-start}.cancel{padding:11px 16px;border:0;border-radius:9px;cursor:pointer}.loginBtn{border:0;background:#eef2f7;padding:8px 10px;border-radius:8px;cursor:pointer;font-family:inherit;margin-right:8px}
+@media(max-width:900px){.sidebar{width:190px}.main{margin-right:190px}.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+@media(max-width:600px){.sidebar{position:relative;width:100%;height:auto}.main{margin-right:0;padding:18px}.cards{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start;gap:12px}.page-head{gap:10px}}
+.admin-only{display:none}.delete-btn{background:#b91c1c;color:#fff;border:0;border-radius:8px;padding:7px 11px;cursor:pointer;font-family:inherit;font-size:12px}.delete-btn:hover{opacity:.85}.action-cell{white-space:nowrap}</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<div class="logo">CIA HQ<span>نظام إدارة CIA</span></div>
+<div class="nav">
+<button class="active" data-page="home">▦ الرئيسية</button>
+<button data-page="officers">👮 الضباط</button>
+<button data-page="ranks">🎖️ الرتب</button>
+<button data-page="cases">📋 القضايا</button>
+<button data-page="vehicles">🚔 المركبات</button>
+<button data-page="reports">📑 التقارير</button>
+<button data-page="settings">⚙️ الإعدادات</button>
+</div>
+</aside>
+
+<main class="main">
+<div class="top"><div class="title"><h1 id="pageTitle">لوحة القيادة</h1><p id="pageDesc">إدارة ومتابعة أعمال CIA</p></div><div class="profile"><span id="roleText">👁️ مشاهد</span> <button class="loginBtn" onclick="openLogin()">🔐 دخول الإدارة</button></div></div>
+
+<section id="home" class="page active"><div class="panel" style="margin-bottom:18px"><b>وضع المشاهدة:</b> الزائر يستطيع مشاهدة البيانات فقط، وتظهر أدوات التعديل بعد دخول الإدارة بالرقم السري.</div>
+<div class="cards">
+<div class="card"><div class="label">إجمالي الضباط</div><div class="number" id="officerCount">0</div></div>
+<div class="card"><div class="label">القضايا المفتوحة</div><div class="number" id="caseCount">0</div></div>
+<div class="card"><div class="label">المطلوبون</div><div class="number">0</div></div>
+<div class="card"><div class="label">المركبات النشطة</div><div class="number">0</div></div>
+</div>
+<div class="grid">
+<div class="panel"><h2>آخر النشاطات</h2><table><thead><tr><th>الضابط</th><th>النشاط</th><th>التاريخ</th><th>الحالة</th></tr></thead><tbody id="activity"></tbody></table></div>
+<div class="panel"><h2>الوصول السريع</h2><div class="quick">
+<button onclick="openModal('ضابط جديد','officers')">+ إضافة ضابط</button>
+<button onclick="openModal('قضية جديدة','cases')">+ قضية جديدة</button>
+<button onclick="openModal('مركبة جديدة','vehicles')">+ إضافة مركبة</button>
+<button onclick="openModal('تقرير جديد','reports')">+ تقرير جديد</button>
+</div></div>
+</div>
+</section>
+
+<section id="officers" class="page"><div class="panel"><div class="page-head"><h2>إدارة الضباط</h2><button class="add admin-only" onclick="openModal('ضابط جديد','officers')">+ إضافة ضابط</button></div><input class="search" placeholder="ابحث عن ضابط..." oninput="filterTable(this,'officerTable')"><table id="officerTable"><thead><tr><th>الاسم</th><th>الرتبة</th><th>القسم</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="ranks" class="page"><div class="panel"><div class="page-head"><h2>الرتب</h2><button class="add admin-only" onclick="openModal('رتبة جديدة','ranks')">+ إضافة رتبة</button></div><table id="rankTable"><thead><tr><th>الرتبة</th><th>المستوى</th><th>الصلاحيات</th><th>الإجراء</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="cases" class="page"><div class="panel"><div class="page-head"><h2>القضايا</h2><button class="add admin-only" onclick="openModal('قضية جديدة','cases')">+ إضافة قضية</button></div><input class="search" placeholder="ابحث في القضايا..." oninput="filterTable(this,'caseTable')"><table id="caseTable"><thead><tr><th>رقم القضية</th><th>العنوان</th><th>الضابط</th><th>الحالة</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="vehicles" class="page"><div class="panel"><div class="page-head"><h2>المركبات</h2><button class="add admin-only" onclick="openModal('مركبة جديدة','vehicles')">+ إضافة مركبة</button></div><table id="vehicleTable"><thead><tr><th>رقم المركبة</th><th>النوع</th><th>القسم</th><th>الحالة</th></tr></thead><tbody></tbody></table></div></section>
+
+
+
+<section id="reports" class="page"><div class="panel"><div class="page-head"><h2>التقارير</h2><button class="add admin-only" onclick="openModal('تقرير جديد','reports')">+ إضافة تقرير</button></div><table id="reportTable"><thead><tr><th>التقرير</th><th>المحرر</th><th>التاريخ</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="settings" class="page"><div class="panel"><h2>الإعدادات</h2><p>إعدادات نظام إدارة CIA والصلاحيات.</p><button class="add admin-only" onclick="alert('تم حفظ الإعدادات')">حفظ الإعدادات</button> <button class="cancel" onclick="logoutAdmin()">تسجيل خروج الإدارة</button></div></section>
+</main>
+
+
+<div class="modal" id="loginModal">
+<div class="box">
+<h2>دخول الإدارة</h2>
+<p style="color:#6b7280;font-size:13px">أدخل الرقم السري لفتح صلاحيات التعديل.</p>
+<input id="passwordInput" type="password" placeholder="الرقم السري">
+<div class="actions">
+<button class="add" onclick="loginAdmin()">دخول</button>
+<button class="cancel" onclick="closeLogin()">إلغاء</button>
+</div>
+<p id="loginError" style="display:none;color:#b91c1c;font-size:12px;margin-bottom:0">الرقم السري غير صحيح.</p>
+</div>
+</div>
+<div class="modal" id="modal"><div class="box"><h2 id="modalTitle">إضافة</h2><input id="input1" placeholder="الاسم"><input id="input2" placeholder="المعلومات"><div class="actions"><button class="add" onclick="saveItem()">حفظ</button><button class="cancel" onclick="closeModal()">إلغاء</button></div></div></div>
+
+<script>
+const titles={home:['لوحة القيادة','إدارة ومتابعة أعمال CIA'],officers:['الضباط','إدارة بيانات موظفي CIA'],ranks:['الرتب','إدارة رتب وصلاحيات CIA'],cases:['القضايا','متابعة القضايا والتحقيقات'],vehicles:['المركبات','إدارة مركبات CIA'],citizens:['المواطنون','إدارة السجلات'],reports:['التقارير','التقارير الإدارية'],settings:['الإعدادات','إعدادات النظام']};
+let current='';
+let isAdmin=false;
+const ADMIN_PASSWORD='8422';
+const STORAGE_KEY='CIA_DATA_V3';
+const defaultData={
+ officers:[],
+ ranks:[
+  {name:'Director',level:'1',info:'إدارة كاملة'},
+  {name:'Deputy Director',level:'2',info:'إدارة الأقسام'},
+  {name:'Assistant Director',level:'3',info:'إدارة العمليات'},
+  {name:'Special Agent',level:'4',info:'التحقيقات'},
+  {name:'Agent',level:'5',info:'العمليات الميدانية'},
+  {name:'Analyst',level:'6',info:'التحليل والمعلومات'}
+ ],
+ cases:[],vehicles:[],reports:[],activity:[]
+};
+let data=loadData();
+function loadData(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY));if(x)return Object.assign({},defaultData,x)}catch(e){}return JSON.parse(JSON.stringify(defaultData))}
+function persist(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function esc(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function deleteButton(type,index){return `<td class="action-cell"><button type="button" class="delete-btn admin-only" onclick="deleteItem('${type}',${index})">🗑️ حذف</button></td>`}
+function deleteItem(type,index){
+ if(!isAdmin){openLogin();return}
+ if(!data[type]||!data[type][index])return;
+ const item=data[type][index];
+ const name=item.name||item.title||item.number||'هذا السجل';
+ if(!confirm('هل أنت متأكد من حذف: '+name+' ؟'))return;
+ data[type].splice(index,1);
+ data.activity.unshift({actor:'مدير CIA',action:'حذف '+name,date:'الآن',status:'تم الحذف'});
+ data.activity=data.activity.slice(0,50);
+ persist();renderAll();
+}
+function openLogin(){document.getElementById('loginModal').classList.add('show');document.getElementById('passwordInput').value='';document.getElementById('loginError').style.display='none';setTimeout(()=>document.getElementById('passwordInput').focus(),50)}
+function closeLogin(){document.getElementById('loginModal').classList.remove('show')}
+function loginAdmin(){if(document.getElementById('passwordInput').value===ADMIN_PASSWORD){isAdmin=true;document.getElementById('roleText').textContent='🛡️ مدير CIA';closeLogin();renderAll();alert('تم فتح صلاحيات الإدارة')}else document.getElementById('loginError').style.display='block'}
+function logoutAdmin(){isAdmin=false;document.getElementById('roleText').textContent='👁️ مشاهد';renderAll()}
+document.querySelectorAll('.nav button').forEach(btn=>btn.onclick=()=>showPage(btn.dataset.page));
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));document.getElementById('pageTitle').textContent=titles[id][0];document.getElementById('pageDesc').textContent=titles[id][1]}
+function openModal(name,page){if(!isAdmin){openLogin();return}current=page;document.getElementById('modalTitle').textContent='إضافة '+name;document.getElementById('input1').value='';document.getElementById('input2').value='';document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function saveItem(){
+ if(!isAdmin){closeModal();openLogin();return}
+ const a=document.getElementById('input1').value.trim()||'عنصر جديد';
+ const b=document.getElementById('input2').value.trim()||'غير محدد';
+ if(current==='officers')data.officers.push({name:a,rank:b,dept:'عام',status:'نشط'});
+ if(current==='cases')data.cases.push({number:'#'+String(Date.now()).slice(-5),title:a,officer:b,status:'مفتوحة'});
+ if(current==='vehicles')data.vehicles.push({number:a,type:b,dept:'عام',status:'متاحة'});
+ if(current==='reports')data.reports.push({title:a,editor:b,date:new Date().toLocaleDateString('ar'),status:'جديد'});
+ if(current==='ranks')data.ranks.push({name:a,level:String(data.ranks.length+1),info:b});
+ data.activity.unshift({actor:'مدير CIA',action:'إضافة '+a,date:'الآن',status:'جديد'});
+ data.activity=data.activity.slice(0,50);persist();closeModal();renderAll();
+}
+function renderAll(){
+ document.querySelector('#officerTable tbody').innerHTML=data.officers.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${esc(x.rank)}</td><td>${esc(x.dept)}</td><td><span class="badge">${esc(x.status)}</span></td>${deleteButton('officers',i)}</tr>`).join('');
+ document.querySelector('#rankTable tbody').innerHTML=data.ranks.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${esc(x.level)}</td><td>${esc(x.info)}</td>${deleteButton('ranks',i)}</tr>`).join('');
+ document.querySelector('#caseTable tbody').innerHTML=data.cases.map((x,i)=>`<tr><td>${esc(x.number)}</td><td>${esc(x.title)}</td><td>${esc(x.officer)}</td><td><span class="badge">${esc(x.status)}</span></td>${deleteButton('cases',i)}</tr>`).join('');
+ document.querySelector('#vehicleTable tbody').innerHTML=data.vehicles.map((x,i)=>`<tr><td>${esc(x.number)}</td><td>${esc(x.type)}</td><td>${esc(x.dept)}</td><td><span class="badge">${esc(x.status)}</span></td>${deleteButton('vehicles',i)}</tr>`).join('');
+ document.querySelector('#reportTable tbody').innerHTML=data.reports.map((x,i)=>`<tr><td>${esc(x.title)}</td><td>${esc(x.editor)}</td><td>${esc(x.date)}</td><td><span class="badge">${esc(x.status)}</span></td>${deleteButton('reports',i)}</tr>`).join('');
+ document.getElementById('activity').innerHTML=data.activity.map(x=>`<tr><td>${esc(x.actor)}</td><td>${esc(x.action)}</td><td>${esc(x.date)}</td><td><span class="badge">${esc(x.status)}</span></td></tr>`).join('');
+ document.getElementById('officerCount').textContent=data.officers.length;
+ document.getElementById('caseCount').textContent=data.cases.filter(x=>x.status==='مفتوحة').length;
+ document.querySelectorAll('.admin-only').forEach(e=>e.style.display=isAdmin?'inline-block':'none');
+}
+function filterTable(input,id){const q=input.value.toLowerCase();document.querySelectorAll('#'+id+' tbody tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?'':'none')}
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+document.getElementById('passwordInput').addEventListener('keydown',e=>{if(e.key==='Enter')loginAdmin()});
+renderAll();
+</script>
+</body>
+</html>
